@@ -48,10 +48,16 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- adams -->
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
       <artifactId>adams-scripts</artifactId>
+      <version>${adams.version}</version>
+      <classifier>scripts</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>nz.ac.waikato.cms.adams</groupId>
+      <artifactId>adams-scripts-debian</artifactId>
       <version>${adams.version}</version>
       <classifier>scripts</classifier>
     </dependency>
