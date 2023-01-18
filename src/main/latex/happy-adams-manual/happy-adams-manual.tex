@@ -53,15 +53,25 @@
 \end{titlepage}
 
 \tableofcontents
-\listoffigures
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Introduction}
-TODO
+%\listoffigures
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Flow}
-TODO
+The following standalones are available:
+\begin{tight_itemize}
+  \item \textit{GDALConfiguration} -- specifies the Docker image to use for executing GDAL commands
+\end{tight_itemize}
+The following transformers are available:
+\begin{tight_itemize}
+  \item \textit{GDAL} -- executes the selected GDAL command with the specified parameters applied to the incoming data (i.e., file(s)).
+\end{tight_itemize}
+
+
+\section{GDAL}
+The following GDAL commands are supported:
+\begin{tight_itemize}
+  \item \textit{GDALInfo} -- outputs information about a raster dataset.
+\end{tight_itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
