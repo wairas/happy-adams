@@ -123,7 +123,7 @@ public class GDAL
    */
   @Override
   public Class[] accepts() {
-    return m_Command.accepts();
+    return new Class[]{String.class, String[].class};
   }
 
   /**
@@ -175,7 +175,7 @@ public class GDAL
     String[]	args;
 
     result = null;
-    args   = null;
+    args   = new String[0];
 
     if (m_InputToken.hasPayload(String.class))
       args = new String[]{m_InputToken.getPayload(String.class)};
@@ -183,6 +183,20 @@ public class GDAL
       args = m_InputToken.getPayload(String[].class);
     else
       result = m_InputToken.unhandledData();
+
+    // check number of parameters
+    if (result == null) {
+      if (m_Command.minArguments() > -1) {
+        if (args.length < m_Command.minArguments())
+          result = "Not enough parameters: supplied " + args.length + " but expected at least " + m_Command.minArguments();
+      }
+    }
+    if (result == null) {
+      if (m_Command.maxArguments() > -1) {
+        if (args.length > m_Command.maxArguments())
+          result = "Too many parameters: supplied " + args.length + " but expected at most " + m_Command.maxArguments();
+      }
+    }
 
     if (result == null) {
       m_Command.setFlowContext(this);

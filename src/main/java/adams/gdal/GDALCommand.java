@@ -171,13 +171,6 @@ public interface GDALCommand<O>
   public String getExecutable();
 
   /**
-   * Returns the accepted classes.
-   *
-   * @return		the classes
-   */
-  public Class[] accepts();
-
-  /**
    * Returns the type of output being generated.
    *
    * @return		the class of the output
@@ -190,6 +183,20 @@ public interface GDALCommand<O>
    * @return		true if blocking, false if async
    */
   public boolean isUsingBlocking();
+
+  /**
+   * Returns how many arguments have to be supplied at least.
+   *
+   * @return		the minimum (incl), unbounded if -1
+   */
+  public int minArguments();
+
+  /**
+   * Returns how many arguments can be supplied at most.
+   *
+   * @return		the maximum (incl), unbounded if -1
+   */
+  public int maxArguments();
 
   /**
    * Executes the command.

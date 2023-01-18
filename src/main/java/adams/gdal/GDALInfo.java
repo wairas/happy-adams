@@ -133,6 +133,24 @@ public class GDALInfo
   }
 
   /**
+   * Returns how many arguments have to be supplied at least.
+   *
+   * @return		the minimum (incl), unbounded if -1
+   */
+  public int minArguments() {
+    return 1;
+  }
+
+  /**
+   * Returns how many arguments can be supplied at most.
+   *
+   * @return		the maximum (incl), unbounded if -1
+   */
+  public int maxArguments() {
+    return 1;
+  }
+
+  /**
    * Adds custom directory mappings to the already compiled list.
    *
    * @param mappings	the mappings to process
@@ -168,16 +186,6 @@ public class GDALInfo
       result.add("-json");
 
     return result;
-  }
-
-  /**
-   * Returns the accepted classes.
-   *
-   * @return the classes
-   */
-  @Override
-  public Class[] accepts() {
-    return new Class[]{String.class};
   }
 
   /**
