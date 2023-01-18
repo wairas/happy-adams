@@ -262,6 +262,7 @@
       <plugin>
         <groupId>com.github.fracpete</groupId>
         <artifactId>debian-maven-plugin</artifactId>
+        <version>${debianmavenplugin.version}</version>
         <configuration>
           <skip>false</skip>
           <packageName>${project.name}</packageName>
@@ -334,6 +335,7 @@
       <plugin>
         <groupId>com.github.fracpete</groupId>
         <artifactId>rpm-maven-plugin</artifactId>
+        <version>${rpmmavenplugin.version}</version>
         <executions>
           <execution>
             <goals>
