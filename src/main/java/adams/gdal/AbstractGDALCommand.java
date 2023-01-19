@@ -464,6 +464,7 @@ public abstract class AbstractGDALCommand<O>
       }
 
       cmd = new ArrayList<>();
+      cmd.add("--rm");
       for (DockerDirectoryMapping mapping: mappings) {
 	cmd.add("-v");
 	cmd.add(mapping.getValue());
