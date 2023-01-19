@@ -20,6 +20,7 @@
 
 package adams.gdal;
 
+import adams.core.ObjectCopyHelper;
 import adams.core.QuickInfoHelper;
 import adams.core.Utils;
 import adams.core.Variables;
@@ -37,6 +38,7 @@ import adams.flow.core.Actor;
 import adams.flow.standalone.GDALConfiguration;
 import adams.flow.standalone.SimpleDockerConnection;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -423,6 +425,18 @@ public abstract class AbstractGDALCommand<O>
   }
 
   /**
+   * Builds the container arguments from the input arguments and converts them to container paths.
+   *
+   * @param mappings	the mappings to use
+   * @param args	the args to process
+   * @return		the generated container args
+   * @throws IOException	if converting of a path fails
+   */
+  protected String[] buildContainerArgs(List<DockerDirectoryMapping> mappings, String[] args) throws IOException {
+    return SimpleDockerHelper.toContainerPaths(mappings, args);
+  }
+
+  /**
    * Executes the command.
    *
    * @param args 	the arguments to append
@@ -443,7 +457,7 @@ public abstract class AbstractGDALCommand<O>
     if (result == null) {
       mappings = addCustomDirMappings(buildDirMappings(), args);
       try {
-	containerArgs = SimpleDockerHelper.toContainerPaths(mappings, args);
+	containerArgs = buildContainerArgs(mappings, args);
       }
       catch (Exception e) {
 	return e.getMessage();
@@ -459,6 +473,8 @@ public abstract class AbstractGDALCommand<O>
       cmd.addAll(buildCommand());
 
       dockerCmd = new GenericWithArgs();
+      dockerCmd.setLoggingLevel(getLoggingLevel());
+      dockerCmd.setStdErrProcessing(ObjectCopyHelper.copyObject(m_StdErrProcessing));
       dockerCmd.setBlocking(m_Blocking);
       dockerCmd.setAdditionalArguments(containerArgs);
       dockerCmd.setCommand("run");
@@ -468,11 +484,11 @@ public abstract class AbstractGDALCommand<O>
       m_DockerCommand = dockerCmd;
       result = dockerCmd.execute();
       if (result != null) {
-        if (dockerCmd.hasLastCommand())
+	if (dockerCmd.hasLastCommand())
 	  result = "Following docker command:\n"
 	    + Utils.flatten(dockerCmd.getLastCommand(), " ") + "\n"
 	    + "Failed with message:\n" + result;
-        else
+	else
 	  result = "Docker command failed with message:\n" + result;
       }
     }

@@ -14,35 +14,36 @@
  */
 
 /*
- * GDALInfo.java
+ * GDALTranslate.java
  * Copyright (C) 2023 University of Waikato, Hamilton, New Zealand
  */
 
 package adams.gdal;
 
 import adams.core.QuickInfoHelper;
-import adams.core.Utils;
 import adams.core.base.DockerDirectoryMapping;
+import adams.core.io.FileWriter;
 import adams.core.io.PlaceholderFile;
 import adams.docker.SimpleDockerHelper;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * Lists information about a raster dataset (gdalinfo).
+ * Converts raster data between different formats (gdal_translate).
  *
  * @author fracpete (fracpete at waikato dot ac dot nz)
  */
-public class GDALInfo
-  extends AbstractGDALCommand<String> {
+public class GDALTranslate
+  extends AbstractGDALCommand<String>
+  implements FileWriter {
 
   private static final long serialVersionUID = -4318693242709080322L;
 
-  /** whether to output JSON. */
-  protected boolean m_Json;
+  /** the output file. */
+  protected PlaceholderFile m_OutputFile;
 
   /**
    * Returns a string describing the object.
@@ -51,10 +52,10 @@ public class GDALInfo
    */
   @Override
   public String globalInfo() {
-    return "Lists information about a raster dataset (" + getExecutable() + ").\n"
-      + "Automatically adds the directory that the dataset resides in to the docker directory mappings as " + getWorkspaceDir() + ".\n"
+    return "Converts raster data between different formats (" + getExecutable() + ").\n"
+      + "Automatically adds the directories that the input/output dataset reside in to the docker directory mappings under " + getWorkspaceDir() + ".\n"
       + "For more information see:\n"
-      + "https://gdal.org/programs/gdalinfo.html";
+      + "https://gdal.org/programs/gdal_translate.html";
   }
 
   /**
@@ -65,27 +66,36 @@ public class GDALInfo
     super.defineOptions();
 
     m_OptionManager.add(
-      "json", "json",
-      false);
+      "output", "outputFile",
+      getDefaultOutputFile());
   }
 
   /**
-   * Sets whether to generate JSON or plain text output.
+   * Returns the default output file.
    *
-   * @param value	true if JSON
+   * @return		the file
    */
-  public void setJson(boolean value) {
-    m_Json = value;
+  protected PlaceholderFile getDefaultOutputFile() {
+    return new PlaceholderFile(".");
+  }
+
+  /**
+   * Set output file.
+   *
+   * @param value	file
+   */
+  public void setOutputFile(PlaceholderFile value) {
+    m_OutputFile = value;
     reset();
   }
 
   /**
-   * Returns whether to generate JSON or plain text output.
+   * Get output file.
    *
-   * @return		true if json
+   * @return	file
    */
-  public boolean getJson() {
-    return m_Json;
+  public PlaceholderFile getOutputFile() {
+    return m_OutputFile;
   }
 
   /**
@@ -94,8 +104,8 @@ public class GDALInfo
    * @return 		tip text for this property suitable for
    * 			displaying in the GUI or for listing the options.
    */
-  public String jsonTipText() {
-    return "If enabled, the output format is JSON rather than plain text.";
+  public String outputFileTipText() {
+    return "The name of the output file.";
   }
 
   /**
@@ -108,7 +118,7 @@ public class GDALInfo
     String	result;
 
     result = super.getQuickInfo();
-    result += QuickInfoHelper.toString(this, "json", (m_Json ? "JSON" : "Plain text"), ", format: ");
+    result += QuickInfoHelper.toString(this, "outputFile", m_OutputFile, ", output: ");
 
     return result;
   }
@@ -120,7 +130,7 @@ public class GDALInfo
    */
   @Override
   public String getExecutable() {
-    return "gdalinfo";
+    return "gdal_translate";
   }
 
   /**
@@ -129,7 +139,7 @@ public class GDALInfo
    * @return		the workspace dir
    */
   protected String getWorkspaceDir() {
-    return "/workspace/gdalinfo";
+    return "/workspace/gdal_translate";
   }
 
   /**
@@ -159,33 +169,46 @@ public class GDALInfo
    */
   protected List<DockerDirectoryMapping> addCustomDirMappings(List<DockerDirectoryMapping> mappings, String[] args) {
     List<DockerDirectoryMapping>	result;
-    File				input;
+    File 				localDir;
+    String				contDir;
     DockerDirectoryMapping		mapping;
 
     result = new ArrayList<>(super.addCustomDirMappings(mappings, args));
-    input  = new PlaceholderFile(args[0]);
-    if (input.isFile())
-      input = input.getParentFile();
-    mapping = new DockerDirectoryMapping(input.getAbsolutePath(), getWorkspaceDir());
+
+    // input file
+    localDir = new PlaceholderFile(args[0]).getParentFile();
+    contDir  = SimpleDockerHelper.fixPath(getWorkspaceDir() + "/input");
+    mapping = new DockerDirectoryMapping(localDir.getAbsolutePath(), contDir);
     if (!SimpleDockerHelper.addMapping(result, mapping))
       getLogger().warning("Unable to add mapping (for input): " + mapping);
+
+    // output file
+    localDir = m_OutputFile.getParentFile();
+    contDir  = SimpleDockerHelper.fixPath(getWorkspaceDir() + "/output");
+    mapping  = new DockerDirectoryMapping(localDir.getAbsolutePath(), contDir);
+    if (!SimpleDockerHelper.addMapping(result, mapping))
+      getLogger().warning("Unable to add mapping (for output): " + mapping);
 
     return result;
   }
 
   /**
-   * Generates the command to execute.
+   * Builds the container arguments from the input arguments and converts them to container paths.
    *
-   * @return the command
+   * @param mappings	the mappings to use
+   * @param args	the args to process
+   * @return		the generated container args
+   * @throws IOException        if converting of a path fails
    */
-  protected List<String> buildCommand() {
-    List<String>	result;
+  protected String[] buildContainerArgs(List<DockerDirectoryMapping> mappings, String[] args) throws IOException {
+    String[]	newArgs;
 
-    result = super.buildCommand();
-    if (m_Json)
-      result.add("-json");
+    // add the output directory
+    newArgs = new String[args.length + 1];
+    System.arraycopy(args, 0, newArgs, 0, args.length);
+    newArgs[newArgs.length - 1] = m_OutputFile.getAbsolutePath();
 
-    return result;
+    return SimpleDockerHelper.toContainerPaths(mappings, newArgs);
   }
 
   /**
@@ -196,35 +219,5 @@ public class GDALInfo
   @Override
   public Class generates() {
     return String.class;
-  }
-
-  /**
-   * Hook method for post-processing the output.
-   * <br>
-   * Default implementation just casts the data.
-   *
-   * @param output	the output to process
-   * @return		the processed data
-   */
-  protected String postProcessOutput(Object output) {
-    String		result;
-    List<String>	lines;
-    int			i;
-
-    result = (String) output;
-
-    if (m_Json) {
-      lines = new ArrayList<>(Arrays.asList(result.split("\n")));
-      i     = 0;
-      while (i < lines.size()) {
-	if (lines.get(i).startsWith("ERROR "))
-	  lines.remove(i);
-	else
-	  i++;
-      }
-      result = Utils.flatten(lines, "\n");
-    }
-
-    return result;
   }
 }
