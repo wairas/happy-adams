@@ -123,6 +123,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @param value	the handler
    */
+  @Override
   public void setStdErrProcessing(AbstractStdErrProcessing value) {
     m_StdErrProcessing = value;
     reset();
@@ -133,6 +134,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @return		the handler
    */
+  @Override
   public AbstractStdErrProcessing getStdErrProcessing() {
     return m_StdErrProcessing;
   }
@@ -143,6 +145,7 @@ public abstract class AbstractGDALCommand<O>
    * @return 		tip text for this property suitable for
    * 			displaying in the GUI or for listing the options.
    */
+  @Override
   public String stdErrProcessingTipText() {
     return "The handler for processing output received from the underlying docker command on stderr.";
   }
@@ -306,6 +309,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @param value the actor
    */
+  @Override
   public void setFlowContext(Actor value) {
     m_FlowContext = value;
   }
@@ -315,6 +319,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @return the actor, null if none available
    */
+  @Override
   public Actor getFlowContext() {
     return m_FlowContext;
   }
@@ -344,6 +349,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @param value	the configuration
    */
+  @Override
   public void setConfiguration(GDALConfiguration value) {
     m_Configuration = value;
   }
@@ -353,6 +359,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @return		the configuration, null if none set
    */
+  @Override
   public GDALConfiguration getConfiguration() {
     return m_Configuration;
   }
@@ -504,6 +511,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @return		true if executed
    */
+  @Override
   public boolean isExecuted() {
     return m_Executed;
   }
@@ -513,6 +521,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @return		true if running
    */
+  @Override
   public boolean isRunning() {
     return (m_DockerCommand != null) && (m_DockerCommand.isRunning());
   }
@@ -522,6 +531,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @return		true if finished
    */
+  @Override
   public boolean isFinished() {
     return isExecuted() && !isRunning();
   }
@@ -531,6 +541,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @return		true if output pending
    */
+  @Override
   public boolean hasOutput() {
     return isRunning() || ((m_DockerCommand != null) && m_DockerCommand.hasOutput());
   }
@@ -552,6 +563,7 @@ public abstract class AbstractGDALCommand<O>
    *
    * @return		the output, null if none available
    */
+  @Override
   public O output() {
     O  		result;
 
