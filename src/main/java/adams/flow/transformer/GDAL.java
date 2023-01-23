@@ -31,12 +31,60 @@ import adams.gdal.GDALInfo;
 
 /**
  <!-- globalinfo-start -->
+ * Executes the specified GDAL program, supplying it with the incoming file(s)&#47;dir(s).
+ * <br><br>
  <!-- globalinfo-end -->
  *
  <!-- flow-summary-start -->
+ * Input&#47;output:<br>
+ * - accepts:<br>
+ * &nbsp;&nbsp;&nbsp;java.lang.String<br>
+ * &nbsp;&nbsp;&nbsp;java.lang.String[]<br>
+ * - generates:<br>
+ * &nbsp;&nbsp;&nbsp;java.lang.String[]<br>
+ * <br><br>
  <!-- flow-summary-end -->
  *
  <!-- options-start -->
+ * <pre>-logging-level &lt;OFF|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST&gt; (property: loggingLevel)
+ * &nbsp;&nbsp;&nbsp;The logging level for outputting errors and debugging output.
+ * &nbsp;&nbsp;&nbsp;default: WARNING
+ * </pre>
+ *
+ * <pre>-name &lt;java.lang.String&gt; (property: name)
+ * &nbsp;&nbsp;&nbsp;The name of the actor.
+ * &nbsp;&nbsp;&nbsp;default: GDAL
+ * </pre>
+ *
+ * <pre>-annotation &lt;adams.core.base.BaseAnnotation&gt; (property: annotations)
+ * &nbsp;&nbsp;&nbsp;The annotations to attach to this actor.
+ * &nbsp;&nbsp;&nbsp;default:
+ * </pre>
+ *
+ * <pre>-skip &lt;boolean&gt; (property: skip)
+ * &nbsp;&nbsp;&nbsp;If set to true, transformation is skipped and the input token is just forwarded
+ * &nbsp;&nbsp;&nbsp;as it is.
+ * &nbsp;&nbsp;&nbsp;default: false
+ * </pre>
+ *
+ * <pre>-stop-flow-on-error &lt;boolean&gt; (property: stopFlowOnError)
+ * &nbsp;&nbsp;&nbsp;If set to true, the flow execution at this level gets stopped in case this
+ * &nbsp;&nbsp;&nbsp;actor encounters an error; the error gets propagated; useful for critical
+ * &nbsp;&nbsp;&nbsp;actors.
+ * &nbsp;&nbsp;&nbsp;default: false
+ * </pre>
+ *
+ * <pre>-silent &lt;boolean&gt; (property: silent)
+ * &nbsp;&nbsp;&nbsp;If enabled, then no errors are output in the console; Note: the enclosing
+ * &nbsp;&nbsp;&nbsp;actor handler must have this enabled as well.
+ * &nbsp;&nbsp;&nbsp;default: false
+ * </pre>
+ *
+ * <pre>-command &lt;adams.gdal.GDALCommand&gt; (property: command)
+ * &nbsp;&nbsp;&nbsp;The GDAL command to run.
+ * &nbsp;&nbsp;&nbsp;default: adams.gdal.GDALInfo -output-formatter \"adams.core.command.output.LineSplit -regexp \\\"ERROR .*\\\" -invert true\" -stdout-processor adams.core.command.stdout.Null -stderr-processor adams.core.command.stderr.Null
+ * </pre>
+ *
  <!-- options-end -->
  *
  * @author fracpete (fracpete at waikato dot ac dot nz)
@@ -150,15 +198,15 @@ public class GDAL
     if (result == null) {
       m_Connection = (SimpleDockerConnection) ActorUtils.findClosestType(this, SimpleDockerConnection.class, true);
       if (m_Connection == null)
-	result = "No " + Utils.classToString(SimpleDockerConnection.class) + " actor found!";
+        result = "No " + Utils.classToString(SimpleDockerConnection.class) + " actor found!";
       else if (m_Connection.getAcualBinary() == null)
-	result = "No docker binary available from: " + m_Connection.getFullName();
+        result = "No docker binary available from: " + m_Connection.getFullName();
     }
 
     if (result == null) {
       m_Configuration = (GDALConfiguration) ActorUtils.findClosestType(this, GDALConfiguration.class, true);
       if (m_Configuration == null)
-	result = "No " + Utils.classToString(GDALConfiguration.class) + " actor found!";
+        result = "No " + Utils.classToString(GDALConfiguration.class) + " actor found!";
     }
 
     return result;
@@ -216,7 +264,7 @@ public class GDAL
    */
   @Override
   public boolean hasPendingOutput() {
-    return (m_Command != null) && m_Command.hasOutput();
+    return m_Command.hasOutput();
   }
 
   /**
@@ -231,11 +279,9 @@ public class GDAL
 
     result = null;
 
-    if (m_Command != null) {
-      output = m_Command.output();
-      if (output != null)
-        result = new Token(output);
-    }
+    output = m_Command.output();
+    if (output != null)
+      result = new Token(output);
 
     return result;
   }
@@ -245,20 +291,17 @@ public class GDAL
    */
   @Override
   public void stopExecution() {
-    if (m_Command != null)
-      m_Command.stopExecution();
+    m_Command.stopExecution();
     super.stopExecution();
   }
 
   /**
-   * Cleans up after the execution has finished.
+   * Cleans up after the execution has finished. Also removes graphical
+   * components.
    */
   @Override
-  public void wrapUp() {
-    if (m_Command != null) {
-      m_Command.cleanUp();
-      m_Command = null;
-    }
-    super.wrapUp();
+  public void cleanUp() {
+    m_Command.cleanUp();
+    super.cleanUp();
   }
 }
