@@ -272,8 +272,10 @@ public abstract class AbstractGDALCommand
 
     if (m_DockerCommand != null) {
       result = m_DockerCommand.output();
-      if (m_DockerCommand.isFinished())
-	m_DockerCommand = null;
+      if (m_DockerCommand.isFinished()) {
+        m_DockerCommand.cleanUp();
+        m_DockerCommand = null;
+      }
     }
 
     return result;
@@ -287,5 +289,17 @@ public abstract class AbstractGDALCommand
     if (m_DockerCommand != null)
       m_DockerCommand.stopExecution();
     m_Stopped = true;
+  }
+
+  /**
+   * Cleans up data structures, frees up memory.
+   */
+  @Override
+  public void cleanUp() {
+    if (m_DockerCommand != null) {
+      m_DockerCommand.cleanUp();
+      m_DockerCommand = null;
+    }
+    super.cleanUp();
   }
 }

@@ -255,8 +255,10 @@ public class GDAL
    */
   @Override
   public void wrapUp() {
-    if (m_Command != null)
+    if (m_Command != null) {
+      m_Command.cleanUp();
       m_Command = null;
+    }
     super.wrapUp();
   }
 }
