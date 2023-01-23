@@ -21,20 +21,12 @@
 package adams.gdal;
 
 import adams.core.ObjectCopyHelper;
-import adams.core.QuickInfoHelper;
 import adams.core.Utils;
-import adams.core.Variables;
-import adams.core.base.BaseObject;
-import adams.core.base.BaseString;
-import adams.core.base.BaseText;
 import adams.core.base.DockerDirectoryMapping;
-import adams.core.option.AbstractOptionHandler;
-import adams.core.option.OptionUtils;
+import adams.core.command.AbstractAsyncCapableExternalCommandWithOptions;
+import adams.core.management.User;
 import adams.docker.SimpleDockerHelper;
 import adams.docker.simpledocker.GenericWithArgs;
-import adams.docker.simpledocker.stderrprocessing.AbstractStdErrProcessing;
-import adams.docker.simpledocker.stderrprocessing.Log;
-import adams.flow.core.Actor;
 import adams.flow.standalone.GDALConfiguration;
 import adams.flow.standalone.SimpleDockerConnection;
 
@@ -42,30 +34,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Abstract ancestor for GDAL commands.
  *
  * @author fracpete (fracpete at waikato dot ac dot nz)
  */
-public abstract class AbstractGDALCommand<O>
-  extends AbstractOptionHandler
-  implements GDALCommand<O> {
+public abstract class AbstractGDALCommand
+  extends AbstractAsyncCapableExternalCommandWithOptions
+  implements GDALCommand {
 
   private static final long serialVersionUID = 6921470826046130145L;
-
-  /** whether to use blocking or async mode. */
-  protected boolean m_Blocking;
-
-  /** the handler for processing output on stderr. */
-  protected AbstractStdErrProcessing m_StdErrProcessing;
-
-  /** the options for the command. */
-  protected BaseString[] m_Options;
-
-  /** the options as single string. */
-  protected BaseText m_OptionsString;
 
   /** the docker connection. */
   protected transient SimpleDockerConnection m_Connection;
@@ -73,256 +52,8 @@ public abstract class AbstractGDALCommand<O>
   /** the GDAL configuration. */
   protected transient GDALConfiguration m_Configuration;
 
-  /** the command was executed. */
-  protected boolean m_Executed;
-
-  /** whether the execution was stopped. */
-  protected boolean m_Stopped;
-
-  /** the flow context. */
-  protected Actor m_FlowContext;
-
   /** the underlying docker command to execute. */
   protected transient GenericWithArgs m_DockerCommand;
-
-  /**
-   * Adds options to the internal list of options.
-   */
-  @Override
-  public void defineOptions() {
-    super.defineOptions();
-
-    m_OptionManager.add(
-      "stderr-processing", "stdErrProcessing",
-      getDefaultStdErrProcessing());
-
-    m_OptionManager.add(
-      "blocking", "blocking",
-      true);
-
-    m_OptionManager.add(
-      "option", "options",
-      new BaseString[0]);
-
-    m_OptionManager.add(
-      "options-string", "optionsString",
-      new BaseText());
-  }
-
-  /**
-   * Returns the default handler for processing output on stderr.
-   *
-   * @return		the handler
-   */
-  protected AbstractStdErrProcessing getDefaultStdErrProcessing() {
-    return new Log();
-  }
-
-  /**
-   * Sets the handler for processing the output received on stderr.
-   *
-   * @param value	the handler
-   */
-  @Override
-  public void setStdErrProcessing(AbstractStdErrProcessing value) {
-    m_StdErrProcessing = value;
-    reset();
-  }
-
-  /**
-   * Returns the handler for processing the output received on stderr.
-   *
-   * @return		the handler
-   */
-  @Override
-  public AbstractStdErrProcessing getStdErrProcessing() {
-    return m_StdErrProcessing;
-  }
-
-  /**
-   * Returns the tip text for this property.
-   *
-   * @return 		tip text for this property suitable for
-   * 			displaying in the GUI or for listing the options.
-   */
-  @Override
-  public String stdErrProcessingTipText() {
-    return "The handler for processing output received from the underlying docker command on stderr.";
-  }
-
-  /**
-   * Sets whether to execute in blocking or async fashion.
-   *
-   * @param value	true for blocking
-   */
-  @Override
-  public void setBlocking(boolean value) {
-    m_Blocking = value;
-    reset();
-  }
-
-  /**
-   * Returns whether to execute in blocking or async fashion.
-   *
-   * @return		true for blocking
-   */
-  @Override
-  public boolean getBlocking() {
-    return m_Blocking;
-  }
-
-  /**
-   * Returns the tip text for this property.
-   *
-   * @return 		tip text for this property suitable for
-   * 			displaying in the GUI or for listing the options.
-   */
-  @Override
-  public String blockingTipText() {
-    return "If enabled, the command is executed in blocking fashion rather than asynchronous.";
-  }
-
-  /**
-   * Returns whether blocking or async mode is used.
-   *
-   * @return		true if blocking
-   */
-  @Override
-  public boolean isUsingBlocking() {
-    return m_Blocking;
-  }
-
-  /**
-   * Sets the options for the command.
-   *
-   * @param value	the options
-   */
-  @Override
-  public void setOptions(BaseString[] value) {
-    m_Options = value;
-    reset();
-  }
-
-  /**
-   * Returns the options for the command.
-   *
-   * @return		the options
-   */
-  @Override
-  public BaseString[] getOptions() {
-    return m_Options;
-  }
-
-  /**
-   * Returns the tip text for this property.
-   *
-   * @return 		tip text for this property suitable for
-   * 			displaying in the GUI or for listing the options.
-   */
-  @Override
-  public String optionsTipText() {
-    return "The options for the command; variables get expanded automatically.";
-  }
-
-  /**
-   * Sets the options for the command.
-   *
-   * @param value	the options
-   */
-  @Override
-  public void setOptionsString(BaseText value) {
-    m_OptionsString = value;
-    reset();
-  }
-
-  /**
-   * Returns the options for the command as single string.
-   *
-   * @return		the options
-   */
-  @Override
-  public BaseText getOptionsString() {
-    return m_OptionsString;
-  }
-
-  /**
-   * Returns the tip text for this property.
-   *
-   * @return 		tip text for this property suitable for
-   * 			displaying in the GUI or for listing the options.
-   */
-  @Override
-  public String optionsStringTipText() {
-    return "The options for the command as a single string; overrides the options array; variables get expanded automatically.";
-  }
-
-  /**
-   * Returns the actual options to use. The options string takes precendence over the array.
-   *
-   * @return		the options
-   */
-  @Override
-  public String[] getActualOptions() {
-    String[]	result;
-    int		i;
-    Variables vars;
-
-    vars = m_FlowContext.getVariables();
-    try {
-      if (!m_OptionsString.isEmpty()) {
-	result = OptionUtils.splitOptions(vars.expand(m_OptionsString.getValue()));
-      }
-      else {
-	result = BaseObject.toStringArray(m_Options);
-	for (i = 0; i < result.length; i++)
-	  result[i] = vars.expand(result[i]);
-      }
-      return result;
-    }
-    catch (Exception e) {
-      getLogger().log(Level.SEVERE, "Failed to parse options!", e);
-      return new String[0];
-    }
-  }
-
-  /**
-   * Returns a quick info about the object, which can be displayed in the GUI.
-   *
-   * @return		null if no info available, otherwise short string
-   */
-  @Override
-  public String getQuickInfo() {
-    String	result;
-
-    result = QuickInfoHelper.toString(this, "blocking", (m_Blocking ? "blocking" : "async"), "mode: ");
-    result += QuickInfoHelper.toString(this, "stdErrProcessing", m_StdErrProcessing, ", stderr: ");
-    if (!m_OptionsString.isEmpty() || getOptionManager().hasVariableForProperty("optionsString"))
-      result += QuickInfoHelper.toString(this, "optionsString", (m_OptionsString.isEmpty() ? "-none-" : m_OptionsString), ", options string: ");
-    else
-      result += QuickInfoHelper.toString(this, "options", m_Options, ", options: ");
-
-    return result;
-  }
-
-  /**
-   * Sets the flow context.
-   *
-   * @param value the actor
-   */
-  @Override
-  public void setFlowContext(Actor value) {
-    m_FlowContext = value;
-  }
-
-  /**
-   * Returns the flow context, if any.
-   *
-   * @return the actor, null if none available
-   */
-  @Override
-  public Actor getFlowContext() {
-    return m_FlowContext;
-  }
 
   /**
    * Sets the docker connection to use.
@@ -372,10 +103,7 @@ public abstract class AbstractGDALCommand<O>
   protected String check() {
     String	result;
 
-    result = null;
-
-    if (m_FlowContext == null)
-      result = "No flow context set!";
+    result = super.check();
 
     if (result == null) {
       if (m_Connection == null)
@@ -386,9 +114,6 @@ public abstract class AbstractGDALCommand<O>
       if (m_Configuration == null)
 	result = "No GDAL configuration available! Missing " + Utils.classToString(GDALConfiguration.class) + " standalone?";
     }
-
-    if (result == null)
-      result = m_StdErrProcessing.setUp(this);
 
     return result;
   }
@@ -412,7 +137,7 @@ public abstract class AbstractGDALCommand<O>
   protected List<String> buildCommand() {
     List<String>	result;
 
-    result = new ArrayList<>();
+    result = super.buildCommand();
     result.add(getExecutable());
     result.addAll(Arrays.asList(getActualOptions()));
     return result;
@@ -452,7 +177,7 @@ public abstract class AbstractGDALCommand<O>
   @Override
   public String execute(String[] args) {
     String				result;
-    List<String>			cmd;
+    List<String> 			runOptions;
     List<DockerDirectoryMapping>	mappings;
     String[]				containerArgs;
     GenericWithArgs			dockerCmd;
@@ -470,26 +195,34 @@ public abstract class AbstractGDALCommand<O>
 	return e.getMessage();
       }
 
-      cmd = new ArrayList<>();
-      cmd.add("--rm");
+      // options for "docker run"
+      runOptions = new ArrayList<>();
+      runOptions.add("--rm");
+      runOptions.add("-u");
+      runOptions.add(User.getUserID() + ":" + User.getGroupID());
       for (DockerDirectoryMapping mapping: mappings) {
-	cmd.add("-v");
-	cmd.add(mapping.getValue());
+	runOptions.add("-v");
+	runOptions.add(mapping.getValue());
       }
-      cmd.add("-t");
-      cmd.add(m_Configuration.getImage());
-      cmd.addAll(buildCommand());
+      runOptions.add("-t");
+      runOptions.add(m_Configuration.getImage());
+      runOptions.addAll(buildCommand());
 
+      // assemble docker command
       dockerCmd = new GenericWithArgs();
       dockerCmd.setLoggingLevel(getLoggingLevel());
-      dockerCmd.setStdErrProcessing(ObjectCopyHelper.copyObject(m_StdErrProcessing));
+      dockerCmd.setStdErrProcessor(ObjectCopyHelper.copyObject(m_StdErrProcessor));
+      dockerCmd.setStdOutProcessor(ObjectCopyHelper.copyObject(m_StdOutProcessor));
+      dockerCmd.setOutputFormatter(ObjectCopyHelper.copyObject(m_OutputFormatter));
       dockerCmd.setBlocking(m_Blocking);
       dockerCmd.setAdditionalArguments(containerArgs);
       dockerCmd.setCommand("run");
-      dockerCmd.setOptions(cmd);
+      dockerCmd.setOptions(runOptions);
       dockerCmd.setFlowContext(m_FlowContext);
       dockerCmd.setConnection(m_Connection);
       m_DockerCommand = dockerCmd;
+
+      // execute docker command
       result = dockerCmd.execute();
       if (result != null) {
 	if (dockerCmd.hasLastCommand())
@@ -507,16 +240,6 @@ public abstract class AbstractGDALCommand<O>
   }
 
   /**
-   * Returns whether the command was executed.
-   *
-   * @return		true if executed
-   */
-  @Override
-  public boolean isExecuted() {
-    return m_Executed;
-  }
-
-  /**
    * Returns whether the command is currently running.
    *
    * @return		true if running
@@ -524,16 +247,6 @@ public abstract class AbstractGDALCommand<O>
   @Override
   public boolean isRunning() {
     return (m_DockerCommand != null) && (m_DockerCommand.isRunning());
-  }
-
-  /**
-   * Returns whether the command finished.
-   *
-   * @return		true if finished
-   */
-  @Override
-  public boolean isFinished() {
-    return isExecuted() && !isRunning();
   }
 
   /**
@@ -547,30 +260,18 @@ public abstract class AbstractGDALCommand<O>
   }
 
   /**
-   * Hook method for post-processing the output.
-   * <br>
-   * Default implementation just casts the data.
-   *
-   * @param output	the output to process
-   * @return		the processed data
-   */
-  protected O postProcessOutput(Object output) {
-    return (O) output;
-  }
-
-  /**
    * Returns the next output.
    *
    * @return		the output, null if none available
    */
   @Override
-  public O output() {
-    O  		result;
+  public Object output() {
+    Object 	result;
 
     result = null;
 
     if (m_DockerCommand != null) {
-      result = postProcessOutput(m_DockerCommand.output());
+      result = m_DockerCommand.output();
       if (m_DockerCommand.isFinished())
 	m_DockerCommand = null;
     }
@@ -586,15 +287,5 @@ public abstract class AbstractGDALCommand<O>
     if (m_DockerCommand != null)
       m_DockerCommand.stopExecution();
     m_Stopped = true;
-  }
-
-  /**
-   * Whether the execution has been stopped.
-   *
-   * @return		true if stopped
-   */
-  @Override
-  public boolean isStopped() {
-    return m_Stopped;
   }
 }

@@ -37,7 +37,7 @@ import java.util.List;
  * @author fracpete (fracpete at waikato dot ac dot nz)
  */
 public class GDALTranslate
-  extends AbstractGDALCommand<String>
+  extends AbstractGDALCommand
   implements FileWriter {
 
   private static final long serialVersionUID = -4318693242709080322L;
@@ -209,15 +209,5 @@ public class GDALTranslate
     newArgs[newArgs.length - 1] = m_OutputFile.getAbsolutePath();
 
     return SimpleDockerHelper.toContainerPaths(mappings, newArgs);
-  }
-
-  /**
-   * Returns the type of output being generated.
-   *
-   * @return the class of the output
-   */
-  @Override
-  public Class generates() {
-    return String.class;
   }
 }
