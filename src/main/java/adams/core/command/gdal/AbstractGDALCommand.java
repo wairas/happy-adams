@@ -288,9 +288,10 @@ public abstract class AbstractGDALCommand
       // assemble docker command
       dockerCmd = new GenericWithArgs();
       dockerCmd.setLoggingLevel(getLoggingLevel());
-      dockerCmd.setStdErrProcessor(ObjectCopyHelper.copyObject(m_StdErrProcessor));
-      dockerCmd.setStdOutProcessor(ObjectCopyHelper.copyObject(m_StdOutProcessor));
+      dockerCmd.setOutputType(m_OutputType);
       dockerCmd.setOutputFormatter(ObjectCopyHelper.copyObject(m_OutputFormatter));
+      dockerCmd.setStdOutProcessor(ObjectCopyHelper.copyObject(m_StdOutProcessor));
+      dockerCmd.setStdErrProcessor(ObjectCopyHelper.copyObject(m_StdErrProcessor));
       dockerCmd.setBlocking(m_Blocking);
       dockerCmd.setAdditionalArguments(containerArgs);
       dockerCmd.setCommand("run");
