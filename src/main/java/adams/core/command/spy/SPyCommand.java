@@ -14,23 +14,23 @@
  */
 
 /*
- * GDALCommand.java
+ * SPyCommand.java
  * Copyright (C) 2023 University of Waikato, Hamilton, New Zealand
  */
 
-package adams.gdal;
+package adams.core.command.spy;
 
 import adams.core.command.AsyncCapableExternalCommand;
 import adams.core.command.ExternalCommandWithOptions;
-import adams.flow.standalone.GDALConfiguration;
+import adams.flow.standalone.SPyConfiguration;
 import adams.flow.standalone.SimpleDockerConnection;
 
 /**
- * Interface for GDAL commands.
+ * Interface for SPy commands.
  *
  * @author fracpete (fracpete at waikato dot ac dot nz)
  */
-public interface GDALCommand
+public interface SPyCommand
   extends AsyncCapableExternalCommand, ExternalCommandWithOptions {
 
   /**
@@ -48,21 +48,21 @@ public interface GDALCommand
   public SimpleDockerConnection getConnection();
 
   /**
-   * Sets the GDAL configuration to use.
+   * Sets the SPy configuration to use.
    *
    * @param value	the configuration
    */
-  public void setConfiguration(GDALConfiguration value);
+  public void setConfiguration(SPyConfiguration value);
 
   /**
-   * Returns the GDAL configuration in use.
+   * Returns the SPy configuration in use.
    *
    * @return		the configuration, null if none set
    */
-  public GDALConfiguration getConfiguration();
+  public SPyConfiguration getConfiguration();
 
   /**
-   * Returns the name of the GDAL executable.
+   * Returns the name of the SPy executable.
    *
    * @return		the name
    */

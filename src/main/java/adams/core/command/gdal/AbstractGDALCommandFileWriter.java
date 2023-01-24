@@ -14,17 +14,15 @@
  */
 
 /*
- * GDALInfo.java
+ * AbstractGDALCommandFileWriter.java
  * Copyright (C) 2023 University of Waikato, Hamilton, New Zealand
  */
 
-package adams.gdal;
+package adams.core.command.gdal;
 
 import adams.core.QuickInfoHelper;
-import adams.core.base.BaseRegExp;
 import adams.core.base.DockerDirectoryMapping;
-import adams.core.command.output.LineSplit;
-import adams.core.command.output.OutputFormatter;
+import adams.core.io.FileWriter;
 import adams.core.io.PlaceholderFile;
 import adams.docker.SimpleDockerHelper;
 
@@ -33,30 +31,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lists information about a raster dataset (gdalinfo).
+ * Ancestor for commands that write to an output file.
  *
  * @author fracpete (fracpete at waikato dot ac dot nz)
  */
-public class GDALInfo
-  extends AbstractGDALCommand {
+public abstract class AbstractGDALCommandFileWriter
+  extends AbstractGDALCommand
+  implements FileWriter {
 
   private static final long serialVersionUID = -4318693242709080322L;
 
-  /** whether to output JSON. */
-  protected boolean m_Json;
-
-  /**
-   * Returns a string describing the object.
-   *
-   * @return a description suitable for displaying in the gui
-   */
-  @Override
-  public String globalInfo() {
-    return "Lists information about a raster dataset (" + getExecutable() + ").\n"
-      + "Automatically adds the directory that the dataset resides in to the docker directory mappings as " + getWorkspaceDir() + ".\n"
-      + "For more information see:\n"
-      + "https://gdal.org/programs/gdalinfo.html";
-  }
+  /** the output file. */
+  protected PlaceholderFile m_OutputFile;
 
   /**
    * Adds options to the internal list of options.
@@ -66,57 +52,36 @@ public class GDALInfo
     super.defineOptions();
 
     m_OptionManager.add(
-      "json", "json",
-      false);
+      "output", "outputFile",
+      getDefaultOutputFile());
   }
 
   /**
-   * Returns the default output formatter.
+   * Returns the default output file.
    *
-   * @return		the default
+   * @return		the file
    */
-  @Override
-  protected OutputFormatter getDefaultOutputFormatter() {
-    LineSplit	result;
-
-    result = new LineSplit();
-    result.setRegExp(new BaseRegExp("ERROR .*"));
-    result.setInvert(true);
-
-    return result;
+  protected PlaceholderFile getDefaultOutputFile() {
+    return new PlaceholderFile(".");
   }
 
   /**
-   * Sets whether to execute in blocking or async fashion.
+   * Set output file.
    *
-   * @param value	true for blocking
+   * @param value	file
    */
-  @Override
-  public void setBlocking(boolean value) {
-    super.setBlocking(value);
-    if (!m_Blocking)
-      setJson(false);
-  }
-
-  /**
-   * Sets whether to generate JSON or plain text output.
-   *
-   * @param value	true if JSON
-   */
-  public void setJson(boolean value) {
-    m_Json = value;
-    if (m_Json)
-      setBlocking(true);
+  public void setOutputFile(PlaceholderFile value) {
+    m_OutputFile = value;
     reset();
   }
 
   /**
-   * Returns whether to generate JSON or plain text output.
+   * Get output file.
    *
-   * @return		true if json
+   * @return	file
    */
-  public boolean getJson() {
-    return m_Json;
+  public PlaceholderFile getOutputFile() {
+    return m_OutputFile;
   }
 
   /**
@@ -125,8 +90,8 @@ public class GDALInfo
    * @return 		tip text for this property suitable for
    * 			displaying in the GUI or for listing the options.
    */
-  public String jsonTipText() {
-    return "If enabled, the output format is JSON rather than plain text; NB: only works in blocking mode (requires cleaning up output).";
+  public String outputFileTipText() {
+    return "The name of the output file.";
   }
 
   /**
@@ -139,19 +104,9 @@ public class GDALInfo
     String	result;
 
     result = super.getQuickInfo();
-    result += QuickInfoHelper.toString(this, "json", (m_Json ? "JSON" : "Plain text"), ", format: ");
+    result += QuickInfoHelper.toString(this, "outputFile", m_OutputFile, ", output: ");
 
     return result;
-  }
-
-  /**
-   * Returns the name of the GDAL executable.
-   *
-   * @return the name
-   */
-  @Override
-  public String getExecutable() {
-    return "gdalinfo";
   }
 
   /**
@@ -160,7 +115,7 @@ public class GDALInfo
    * @return		the workspace dir
    */
   protected String getWorkspaceDir() {
-    return "/workspace/gdalinfo";
+    return "/workspace/" + getExecutable();
   }
 
   /**
@@ -190,31 +145,25 @@ public class GDALInfo
    */
   protected List<DockerDirectoryMapping> addCustomDirMappings(List<DockerDirectoryMapping> mappings, String[] args) {
     List<DockerDirectoryMapping>	result;
-    File				input;
+    File 				localDir;
+    String				contDir;
     DockerDirectoryMapping		mapping;
 
     result = new ArrayList<>(super.addCustomDirMappings(mappings, args));
-    input  = new PlaceholderFile(args[0]);
-    if (input.isFile())
-      input = input.getParentFile();
-    mapping = new DockerDirectoryMapping(input.getAbsolutePath(), getWorkspaceDir());
+
+    // input file
+    localDir = new PlaceholderFile(args[0]).getParentFile();
+    contDir  = SimpleDockerHelper.fixPath(getWorkspaceDir() + "/input");
+    mapping = new DockerDirectoryMapping(localDir.getAbsolutePath(), contDir);
     if (!SimpleDockerHelper.addMapping(result, mapping))
       getLogger().warning("Unable to add mapping (for input): " + mapping);
 
-    return result;
-  }
-
-  /**
-   * Generates the command to execute.
-   *
-   * @return the command
-   */
-  protected List<String> buildCommand() {
-    List<String>	result;
-
-    result = super.buildCommand();
-    if (m_Json)
-      result.add("-json");
+    // output file
+    localDir = m_OutputFile.getParentFile();
+    contDir  = SimpleDockerHelper.fixPath(getWorkspaceDir() + "/output");
+    mapping  = new DockerDirectoryMapping(localDir.getAbsolutePath(), contDir);
+    if (!SimpleDockerHelper.addMapping(result, mapping))
+      getLogger().warning("Unable to add mapping (for output): " + mapping);
 
     return result;
   }

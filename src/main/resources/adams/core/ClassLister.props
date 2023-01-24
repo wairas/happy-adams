@@ -6,6 +6,10 @@
 #
 # Author:  FracPete (fracpete at waikato dot ac dot nz)
 
-# the GDAL programs
-adams.gdal.GDALCommand=\
-  adams.gdal
+# the GDAL commands
+adams.core.command.gdal.GDALCommand=\
+  adams.core.command.gdal
+
+# the SPy (spectral python) commands
+adams.core.command.spy.SPyCommand=\
+  adams.core.command.spy

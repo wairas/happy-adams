@@ -1,5 +1,5 @@
 # Project: adams
-# Date: 2023-01-24 10:22:26
+# Date: 2023-01-24 14:40:10
 # User: fracpete
 # Charset: UTF-8
 # Modules: adams-compress,adams-core,adams-docker,adams-event,adams-excel,adams-imaging,adams-json,adams-math,adams-meta,adams-ml,adams-net,adams-pdf,adams-rats-core,adams-rats-net,adams-rats-redis,adams-rats-rest,adams-rats-webservice,adams-redis,adams-rest,adams-security,adams-spectral-2dim-core,adams-spreadsheet,adams-terminal,adams-visualstats,adams-webservice,adams-webservice-core,adams-weka-lts,adams-xml,adams-yaml,happy-adams
@@ -8,7 +8,16 @@ adams.flow.control.Flow -annotation "Allows the user to select a raster dataset 
  adams.flow.standalone.SimpleDockerConnection -registry public-push.aml-repo.cms.waikato.ac.nz:443 -user public -password {cHVibGlj} -login true
  adams.flow.standalone.GDALConfiguration
  adams.flow.standalone.SetVariable -name restore -var-name restore -var-value @{flow_filename_long}.props -value-type FILE_FORWARD_SLASHES -expand-value true
- adams.flow.source.SelectFile -stop-if-canceled true -file-chooser-title "Select raster dataset" -absolute true -use-forward-slashes true -restoration-enabled true -restoration-file @{restore}
- adams.flow.transformer.GDAL -command "adams.gdal.GDALInfo -output-formatter \"adams.core.command.output.LineSplit -regexp \\\"ERROR .*\\\" -invert true\" -stdout-processor adams.core.command.stdout.Null -stderr-processor adams.core.command.stderr.Null"
- adams.flow.transformer.StringJoin -glue \n
- adams.flow.sink.Display -display-type adams.flow.core.displaytype.Default -writer adams.data.io.output.NullWriter
+ adams.flow.source.Start
+ adams.flow.control.Trigger -name "prompt user"
+  adams.flow.standalone.SetVariable -name pull_type -var-name pull_type -var-value MISSING
+  adams.flow.standalone.SetVariable -name "restore file" -var-name restore -var-value @{flow_filename_long}.props -value-type FILE_FORWARD_SLASHES -expand-value true
+  adams.flow.source.EnterManyValues -name Parameters -stop-if-canceled true -value "adams.flow.source.valuedefinition.FileValueDefinition -name input_file -display \"Input file\" -file-chooser-title \"Input file\" -use-forward-slashes true" -value "adams.flow.source.valuedefinition.DefaultValueDefinition -name force_pull -display \"Force docker image pull?\" -help \"whether to force pulling the underlying docker image, e.g., when changed\" -type BOOLEAN -default-value false" -output-type MAP -restoration-enabled true -restoration-file @{restore}
+  adams.flow.transformer.MapToVariables
+  adams.flow.control.ConditionalTrigger -name "force pull?" -condition "adams.flow.condition.bool.Expression -expression \"@{force_pull} = true\""
+   adams.flow.standalone.SetVariable -name pull_type -var-name pull_type -var-value ALWAYS
+ adams.flow.control.Trigger -name "output info"
+  adams.flow.source.Variable -var-name input_file -conversion adams.data.conversion.StringToString
+  adams.flow.transformer.GDAL -command "adams.core.command.gdal.Info -output-formatter \"adams.core.command.output.LineSplit -regexp \\\"ERROR .*\\\" -invert true\" -stdout-processor adams.core.command.stdout.Null -stderr-processor adams.core.command.stderr.Null -pull-type @{pull_type}"
+  adams.flow.transformer.StringJoin -glue \n
+  adams.flow.sink.Display -display-type adams.flow.core.displaytype.Default -writer adams.data.io.output.NullWriter

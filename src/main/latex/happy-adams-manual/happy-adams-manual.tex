@@ -56,10 +56,24 @@
 %\listoffigures
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Introduction}
+The \textit{happy-adams} module provides actors for dealing with hyperspectral images.
+It builds on functionality found in the following libraries:
+
+\begin{tight_itemize}
+  \item GDAL\cite{gdal}
+  \item SPy (Spectral Python)\cite{spy}
+\end{tight_itemize}
+
+In order to avoid any version conflict between libraries, these operators use Docker\cite{docker}
+images behind the scenes to execute the commands within that context.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Flow}
 The following standalones are available:
 \begin{tight_itemize}
   \item \textit{GDALConfiguration} -- specifies the Docker image to use for executing GDAL commands
+  \item \textit{SPyConfiguration} -- specifies the Docker image to use for executing Spectral Python commands
 \end{tight_itemize}
 The following transformers are available:
 \begin{tight_itemize}
@@ -70,13 +84,21 @@ The following transformers are available:
 \section{GDAL}
 The following GDAL commands are supported:
 \begin{tight_itemize}
-  \item \textit{GDALInfo} -- outputs information about a raster dataset.
+  \item \textit{Info} -- outputs information about a raster dataset (\texttt{gdalinfo}).
+  \item \textit{Translate} -- translates a dataset from format into another (\textit{gdal\_translate}).
+\end{tight_itemize}
+
+
+\section{SPy}
+The following Spy commands are supported:
+\begin{tight_itemize}
+  \item \textit{EnviToRGB} -- turns an ENVI file into an RGB one (\textit{spy-envi\_to\_rgb}).
 \end{tight_itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Docker images}
-Below are pointers to source code for Docker images used by this module:
+Below are pointers to the source code for the Docker images used by this module:
 \begin{tight_itemize}
   \item \textit{GDAL} -- \url{https://github.com/wairas/happy-gdal-docker}{}
   \item \textit{Spectral Python} -- \url{https://github.com/wairas/happy-spy-docker}{}

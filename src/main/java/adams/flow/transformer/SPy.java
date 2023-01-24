@@ -14,7 +14,7 @@
  */
 
 /*
- * GDAL.java
+ * SPy.java
  * Copyright (C) 2023 University of Waikato, Hamilton, New Zealand
  */
 
@@ -22,16 +22,16 @@ package adams.flow.transformer;
 
 import adams.core.QuickInfoHelper;
 import adams.core.Utils;
-import adams.core.command.gdal.GDALCommand;
-import adams.core.command.gdal.Info;
+import adams.core.command.spy.EnviToRGB;
+import adams.core.command.spy.SPyCommand;
 import adams.flow.core.ActorUtils;
 import adams.flow.core.Token;
-import adams.flow.standalone.GDALConfiguration;
+import adams.flow.standalone.SPyConfiguration;
 import adams.flow.standalone.SimpleDockerConnection;
 
 /**
  <!-- globalinfo-start -->
- * Executes the specified GDAL program, supplying it with the incoming file(s)&#47;dir(s).
+ * Executes the specified SPy program, supplying it with the incoming file(s)&#47;dir(s).
  * <br><br>
  <!-- globalinfo-end -->
  *
@@ -53,7 +53,7 @@ import adams.flow.standalone.SimpleDockerConnection;
  *
  * <pre>-name &lt;java.lang.String&gt; (property: name)
  * &nbsp;&nbsp;&nbsp;The name of the actor.
- * &nbsp;&nbsp;&nbsp;default: GDAL
+ * &nbsp;&nbsp;&nbsp;default: SPy
  * </pre>
  *
  * <pre>-annotation &lt;adams.core.base.BaseAnnotation&gt; (property: annotations)
@@ -80,28 +80,28 @@ import adams.flow.standalone.SimpleDockerConnection;
  * &nbsp;&nbsp;&nbsp;default: false
  * </pre>
  *
- * <pre>-command &lt;adams.core.command.gdal.GDALCommand&gt; (property: command)
- * &nbsp;&nbsp;&nbsp;The GDAL command to run.
- * &nbsp;&nbsp;&nbsp;default: adams.core.command.gdal.GDALInfo -output-formatter \"adams.core.command.output.LineSplit -regexp \\\"ERROR .*\\\" -invert true\" -stdout-processor adams.core.command.stdout.Null -stderr-processor adams.core.command.stderr.Null
+ * <pre>-command &lt;adams.core.command.spy.SPyCommand&gt; (property: command)
+ * &nbsp;&nbsp;&nbsp;The SPy command to run.
+ * &nbsp;&nbsp;&nbsp;default: adams.core.command.spy.SPyInfo -output-formatter \"adams.core.command.output.LineSplit -regexp \\\"ERROR .*\\\" -invert true\" -stdout-processor adams.core.command.stdout.Null -stderr-processor adams.core.command.stderr.Null
  * </pre>
  *
  <!-- options-end -->
  *
  * @author fracpete (fracpete at waikato dot ac dot nz)
  */
-public class GDAL
+public class SPy
   extends AbstractTransformer {
 
   private static final long serialVersionUID = 463922754200204096L;
 
-  /** the GDAL command to execute. */
-  protected GDALCommand m_Command;
+  /** the SPy command to execute. */
+  protected SPyCommand m_Command;
 
   /** the docker connection. */
   protected transient SimpleDockerConnection m_Connection;
 
-  /** the GDAL configuration. */
-  protected transient GDALConfiguration m_Configuration;
+  /** the SPy configuration. */
+  protected transient SPyConfiguration m_Configuration;
 
   /**
    * Returns a string describing the object.
@@ -110,7 +110,7 @@ public class GDAL
    */
   @Override
   public String globalInfo() {
-    return "Executes the specified GDAL program, supplying it with the incoming file(s)/dir(s).";
+    return "Executes the specified SPy program, supplying it with the incoming file(s)/dir(s).";
   }
 
   /**
@@ -122,7 +122,7 @@ public class GDAL
 
     m_OptionManager.add(
       "command", "command",
-      new Info());
+      new EnviToRGB());
   }
 
   /**
@@ -140,7 +140,7 @@ public class GDAL
    *
    * @param value	the command
    */
-  public void setCommand(GDALCommand value) {
+  public void setCommand(SPyCommand value) {
     m_Command = value;
     reset();
   }
@@ -150,7 +150,7 @@ public class GDAL
    *
    * @return		the command
    */
-  public GDALCommand getCommand() {
+  public SPyCommand getCommand() {
     return m_Command;
   }
 
@@ -161,7 +161,7 @@ public class GDAL
    * 			displaying in the GUI or for listing the options.
    */
   public String commandTipText() {
-    return "The GDAL command to run.";
+    return "The SPy command to run.";
   }
 
   /**
@@ -204,9 +204,9 @@ public class GDAL
     }
 
     if (result == null) {
-      m_Configuration = (GDALConfiguration) ActorUtils.findClosestType(this, GDALConfiguration.class, true);
+      m_Configuration = (SPyConfiguration) ActorUtils.findClosestType(this, SPyConfiguration.class, true);
       if (m_Configuration == null)
-        result = "No " + Utils.classToString(GDALConfiguration.class) + " actor found!";
+        result = "No " + Utils.classToString(SPyConfiguration.class) + " actor found!";
     }
 
     return result;

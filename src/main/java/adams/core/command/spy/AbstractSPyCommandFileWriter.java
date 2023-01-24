@@ -14,11 +14,11 @@
  */
 
 /*
- * GDALTranslate.java
+ * AbstractGDALCommandFileWriter.java
  * Copyright (C) 2023 University of Waikato, Hamilton, New Zealand
  */
 
-package adams.gdal;
+package adams.core.command.spy;
 
 import adams.core.QuickInfoHelper;
 import adams.core.base.DockerDirectoryMapping;
@@ -27,36 +27,22 @@ import adams.core.io.PlaceholderFile;
 import adams.docker.SimpleDockerHelper;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Converts raster data between different formats (gdal_translate).
+ * Ancestor for commands that write to an output file.
  *
  * @author fracpete (fracpete at waikato dot ac dot nz)
  */
-public class GDALTranslate
-  extends AbstractGDALCommand
+public abstract class AbstractSPyCommandFileWriter
+  extends AbstractSPyCommand
   implements FileWriter {
 
   private static final long serialVersionUID = -4318693242709080322L;
 
   /** the output file. */
   protected PlaceholderFile m_OutputFile;
-
-  /**
-   * Returns a string describing the object.
-   *
-   * @return a description suitable for displaying in the gui
-   */
-  @Override
-  public String globalInfo() {
-    return "Converts raster data between different formats (" + getExecutable() + ").\n"
-      + "Automatically adds the directories that the input/output dataset reside in to the docker directory mappings under " + getWorkspaceDir() + ".\n"
-      + "For more information see:\n"
-      + "https://gdal.org/programs/gdal_translate.html";
-  }
 
   /**
    * Adds options to the internal list of options.
@@ -124,22 +110,12 @@ public class GDALTranslate
   }
 
   /**
-   * Returns the name of the GDAL executable.
-   *
-   * @return the name
-   */
-  @Override
-  public String getExecutable() {
-    return "gdal_translate";
-  }
-
-  /**
    * Returns the automatic workspace directory in the container.
    *
    * @return		the workspace dir
    */
   protected String getWorkspaceDir() {
-    return "/workspace/gdal_translate";
+    return "/workspace/" + getExecutable();
   }
 
   /**
@@ -190,24 +166,5 @@ public class GDALTranslate
       getLogger().warning("Unable to add mapping (for output): " + mapping);
 
     return result;
-  }
-
-  /**
-   * Builds the container arguments from the input arguments and converts them to container paths.
-   *
-   * @param mappings	the mappings to use
-   * @param args	the args to process
-   * @return		the generated container args
-   * @throws IOException        if converting of a path fails
-   */
-  protected String[] buildContainerArgs(List<DockerDirectoryMapping> mappings, String[] args) throws IOException {
-    String[]	newArgs;
-
-    // add the output directory
-    newArgs = new String[args.length + 1];
-    System.arraycopy(args, 0, newArgs, 0, args.length);
-    newArgs[newArgs.length - 1] = m_OutputFile.getAbsolutePath();
-
-    return SimpleDockerHelper.toContainerPaths(mappings, newArgs);
   }
 }

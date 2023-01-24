@@ -14,20 +14,22 @@
  */
 
 /*
- * AbstractGDALCommand.java
+ * AbstractSPyCommand.java
  * Copyright (C) 2023 University of Waikato, Hamilton, New Zealand
  */
 
-package adams.gdal;
+package adams.core.command.spy;
 
 import adams.core.ObjectCopyHelper;
+import adams.core.QuickInfoHelper;
 import adams.core.Utils;
 import adams.core.base.DockerDirectoryMapping;
 import adams.core.command.AbstractAsyncCapableExternalCommandWithOptions;
 import adams.core.management.User;
 import adams.docker.SimpleDockerHelper;
 import adams.docker.simpledocker.GenericWithArgs;
-import adams.flow.standalone.GDALConfiguration;
+import adams.docker.simpledocker.PullType;
+import adams.flow.standalone.SPyConfiguration;
 import adams.flow.standalone.SimpleDockerConnection;
 
 import java.io.IOException;
@@ -36,24 +38,80 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Abstract ancestor for GDAL commands.
+ * Abstract ancestor for SPy commands.
  *
  * @author fracpete (fracpete at waikato dot ac dot nz)
  */
-public abstract class AbstractGDALCommand
+public abstract class AbstractSPyCommand
   extends AbstractAsyncCapableExternalCommandWithOptions
-  implements GDALCommand {
+  implements SPyCommand {
 
   private static final long serialVersionUID = 6921470826046130145L;
+
+  /** how to pull. */
+  protected PullType m_PullType;
 
   /** the docker connection. */
   protected transient SimpleDockerConnection m_Connection;
 
-  /** the GDAL configuration. */
-  protected transient GDALConfiguration m_Configuration;
+  /** the SPy configuration. */
+  protected transient SPyConfiguration m_Configuration;
 
   /** the underlying docker command to execute. */
   protected transient GenericWithArgs m_DockerCommand;
+
+  /**
+   * Adds options to the internal list of options.
+   */
+  @Override
+  public void defineOptions() {
+    super.defineOptions();
+
+    m_OptionManager.add(
+      "pull-type", "pullType",
+      PullType.DEFAULT);
+  }
+
+  /**
+   * Sets how to pull the image (overriding setting from {@link SimpleDockerConnection}).
+   *
+   * @param value	the type
+   */
+  public void setPullType(PullType value) {
+    m_PullType = value;
+    reset();
+  }
+
+  /**
+   * Returns how to pull the image (overriding setting from {@link SimpleDockerConnection}).
+   *
+   * @return		the type
+   */
+  public PullType getPullType() {
+    return m_PullType;
+  }
+
+  /**
+   * Returns the tip text for this property.
+   *
+   * @return 		tip text for this property suitable for
+   * 			displaying in the GUI or for listing the options.
+   */
+  public String pullTypeTipText() {
+    return "Determines how to pull the image; used to override the setting defined in " + Utils.classToString(SimpleDockerConnection.class) + ".";
+  }
+
+  /**
+   * Returns the pull type to use.
+   *
+   * @return		the type
+   */
+  public PullType getActualPullType() {
+    if (m_Connection == null)
+      return m_PullType;
+    else
+      return m_Connection.getActualPullType(m_PullType);
+  }
 
   /**
    * Sets the docker connection to use.
@@ -76,23 +134,38 @@ public abstract class AbstractGDALCommand
   }
 
   /**
-   * Sets the GDAL configuration to use.
+   * Sets the SPy configuration to use.
    *
    * @param value	the configuration
    */
   @Override
-  public void setConfiguration(GDALConfiguration value) {
+  public void setConfiguration(SPyConfiguration value) {
     m_Configuration = value;
   }
 
   /**
-   * Returns the GDAL configuration in use.
+   * Returns the SPy configuration in use.
    *
    * @return		the configuration, null if none set
    */
   @Override
-  public GDALConfiguration getConfiguration() {
+  public SPyConfiguration getConfiguration() {
     return m_Configuration;
+  }
+
+  /**
+   * Returns a quick info about the actor, which will be displayed in the GUI.
+   *
+   * @return		null if no info available, otherwise short string
+   */
+  @Override
+  public String getQuickInfo() {
+    String	result;
+
+    result = super.getQuickInfo();
+    result += QuickInfoHelper.toString(this, "pullType", m_PullType, ", pull: ");
+
+    return result;
   }
 
   /**
@@ -112,7 +185,7 @@ public abstract class AbstractGDALCommand
 
     if (result == null) {
       if (m_Configuration == null)
-	result = "No GDAL configuration available! Missing " + Utils.classToString(GDALConfiguration.class) + " standalone?";
+	result = "No SPy configuration available! Missing " + Utils.classToString(SPyConfiguration.class) + " standalone?";
     }
 
     return result;
@@ -198,6 +271,10 @@ public abstract class AbstractGDALCommand
       // options for "docker run"
       runOptions = new ArrayList<>();
       runOptions.add("--rm");
+      if (getActualPullType() != PullType.DEFAULT) {
+        runOptions.add("--pull");
+        runOptions.add(getActualPullType().getType());
+      }
       runOptions.add("-u");
       runOptions.add(User.getUserID() + ":" + User.getGroupID());
       for (DockerDirectoryMapping mapping: mappings) {
