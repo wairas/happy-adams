@@ -26,9 +26,8 @@ import adams.core.QuickInfoHelper;
  <!-- globalinfo-start -->
  * Defines the GDAL context.<br>
  * For more information on GDAL see:<br>
- * https:&#47;&#47;gdal.org&#47;<br>
- * And:<br>
- * https:&#47;&#47;github.com&#47;wairas&#47;happy-gdal-docker
+ * - https:&#47;&#47;gdal.org&#47;<br>
+ * - https:&#47;&#47;github.com&#47;wairas&#47;happy-gdal-docker
  * <br><br>
  <!-- globalinfo-end -->
  *
@@ -96,9 +95,8 @@ public class GDALConfiguration
   public String globalInfo() {
     return "Defines the GDAL context.\n"
       + "For more information on GDAL see:\n"
-      + "https://gdal.org/\n"
-      + "And:\n"
-      + "https://github.com/wairas/happy-gdal-docker";
+      + "- https://gdal.org/\n"
+      + "- https://github.com/wairas/happy-gdal-docker";
   }
 
   /**

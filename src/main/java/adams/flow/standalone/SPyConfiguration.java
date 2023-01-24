@@ -26,9 +26,9 @@ import adams.core.QuickInfoHelper;
  <!-- globalinfo-start -->
  * Defines the SPy (Spectral Python) context.<br>
  * For more information on SPy see:<br>
- * http:&#47;&#47;www.spectralpython.net&#47;<br>
- * And:<br>
- * https:&#47;&#47;github.com&#47;wairas&#47;happy-spy-docker
+ * - http:&#47;&#47;www.spectralpython.net&#47;<br>
+ * - https:&#47;&#47;github.com&#47;wairas&#47;happy-spy-utilities-docker<br>
+ * - https:&#47;&#47;github.com&#47;wairas&#47;spy-utilities
  * <br><br>
  <!-- globalinfo-end -->
  *
@@ -72,7 +72,7 @@ import adams.core.QuickInfoHelper;
  *
  * <pre>-image &lt;java.lang.String&gt; (property: image)
  * &nbsp;&nbsp;&nbsp;The name of the SPy docker image to use.
- * &nbsp;&nbsp;&nbsp;default: public.aml-repo.cms.waikato.ac.nz:443&#47;wairas&#47;happy-spy:0.23.1
+ * &nbsp;&nbsp;&nbsp;default: public.aml-repo.cms.waikato.ac.nz:443&#47;wairas&#47;happy-spy-utilities:latest
  * </pre>
  *
  <!-- options-end -->
@@ -96,9 +96,9 @@ public class SPyConfiguration
   public String globalInfo() {
     return "Defines the SPy (Spectral Python) context.\n"
       + "For more information on SPy see:\n"
-      + "http://www.spectralpython.net/\n"
-      + "And:\n"
-      + "https://github.com/wairas/happy-spy-docker";
+      + "- http://www.spectralpython.net/\n"
+      + "- https://github.com/wairas/happy-spy-utilities-docker\n"
+      + "- https://github.com/wairas/spy-utilities";
   }
 
   /**
@@ -110,7 +110,7 @@ public class SPyConfiguration
 
     m_OptionManager.add(
       "image", "image",
-      "public.aml-repo.cms.waikato.ac.nz:443/wairas/happy-spy:0.23.1");
+      "public.aml-repo.cms.waikato.ac.nz:443/wairas/happy-spy-utilities:latest");
   }
 
   /**
