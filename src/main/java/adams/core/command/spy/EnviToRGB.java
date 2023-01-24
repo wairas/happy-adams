@@ -45,7 +45,7 @@ public class EnviToRGB
   @Override
   public String globalInfo() {
     return "Converts raster data between different formats (" + getExecutable() + ").\n"
-      + "Automatically adds the directories that the input/output dataset reside in to the docker directory mappings under " + getWorkspaceDir() + ".\n"
+      + "Automatically adds the directories that the input/output files reside in to the docker directory mappings under " + getWorkspaceDir() + ".\n"
       + "For more information see:\n"
       + "https://github.com/wairas/spy-utilities";
   }
