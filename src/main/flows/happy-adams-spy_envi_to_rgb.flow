@@ -1,5 +1,5 @@
 # Project: adams
-# Date: 2023-01-24 14:39:52
+# Date: 2023-01-25 10:18:05
 # User: fracpete
 # Charset: UTF-8
 # Modules: adams-compress,adams-core,adams-docker,adams-event,adams-excel,adams-imaging,adams-json,adams-math,adams-meta,adams-ml,adams-net,adams-pdf,adams-rats-core,adams-rats-net,adams-rats-redis,adams-rats-rest,adams-rats-webservice,adams-redis,adams-rest,adams-security,adams-spectral-2dim-core,adams-spreadsheet,adams-terminal,adams-visualstats,adams-webservice,adams-webservice-core,adams-weka-lts,adams-xml,adams-yaml,happy-adams
@@ -16,7 +16,13 @@ adams.flow.control.Flow -annotation "Translates an ENVI file into a JPG or PNG o
   adams.flow.transformer.MapToVariables
   adams.flow.control.ConditionalTrigger -name "force pull?" -condition "adams.flow.condition.bool.Expression -expression \"@{force_pull} = true\""
    adams.flow.standalone.SetVariable -name pull_type -var-name pull_type -var-value ALWAYS
+ adams.flow.control.ConditionalTrigger -name "delete old file?" -condition "adams.flow.condition.bool.FileExists -file @{output_file} -generator adams.core.io.NullFilenameGenerator"
+  adams.flow.source.Variable -var-name output_file -conversion adams.data.conversion.StringToString
+  adams.flow.transformer.DeleteFile
  adams.flow.control.Trigger -name convert
   adams.flow.source.Variable -var-name input_file -conversion adams.data.conversion.StringToString
-  adams.flow.transformer.SPy -command "adams.core.command.spy.EnviToRGB -logging-level INFO -output-formatter adams.core.command.output.PassThrough -stdout-processor adams.core.command.stdout.Log -stderr-processor adams.core.command.stderr.Null -blocking false -options-string @{convert_options} -pull-type @{pull_type} -output @{output_file}"
-  adams.flow.sink.Display -display-type adams.flow.core.displaytype.Default -writer adams.data.io.output.NullWriter
+  adams.flow.transformer.SPy -command "adams.core.command.spy.EnviToRGB -logging-level INFO -output-type BOTH -output-formatter adams.core.command.output.PassThrough -stdout-processor adams.core.command.stdout.Log -stderr-processor adams.core.command.stderr.Log -blocking false -options-string @{convert_options} -pull-type @{pull_type} -output @{output_file}"
+  adams.flow.sink.Display -display-type adams.flow.core.displaytype.Default -x -3 -writer adams.data.io.output.NullWriter
+ adams.flow.control.ConditionalTrigger -name display -condition "adams.flow.condition.bool.FileExists -file @{output_file} -generator adams.core.io.NullFilenameGenerator"
+  adams.flow.source.Variable -var-name output_file -conversion adams.data.conversion.StringToString
+  adams.flow.sink.FilePreview -display-type adams.flow.core.displaytype.Default -writer adams.gui.print.NullWriter -use-custom-preview true -preview "adams.gui.tools.previewbrowser.ImageHandler -image-reader adams.data.io.input.JAIImageReader"

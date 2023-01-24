@@ -1,5 +1,5 @@
 # Project: adams
-# Date: 2023-01-24 14:40:10
+# Date: 2023-01-25 09:54:57
 # User: fracpete
 # Charset: UTF-8
 # Modules: adams-compress,adams-core,adams-docker,adams-event,adams-excel,adams-imaging,adams-json,adams-math,adams-meta,adams-ml,adams-net,adams-pdf,adams-rats-core,adams-rats-net,adams-rats-redis,adams-rats-rest,adams-rats-webservice,adams-redis,adams-rest,adams-security,adams-spectral-2dim-core,adams-spreadsheet,adams-terminal,adams-visualstats,adams-webservice,adams-webservice-core,adams-weka-lts,adams-xml,adams-yaml,happy-adams
@@ -18,6 +18,6 @@ adams.flow.control.Flow -annotation "Allows the user to select a raster dataset 
    adams.flow.standalone.SetVariable -name pull_type -var-name pull_type -var-value ALWAYS
  adams.flow.control.Trigger -name "output info"
   adams.flow.source.Variable -var-name input_file -conversion adams.data.conversion.StringToString
-  adams.flow.transformer.GDAL -command "adams.core.command.gdal.Info -output-formatter \"adams.core.command.output.LineSplit -regexp \\\"ERROR .*\\\" -invert true\" -stdout-processor adams.core.command.stdout.Null -stderr-processor adams.core.command.stderr.Null -pull-type @{pull_type}"
+  adams.flow.transformer.GDAL -command "adams.core.command.gdal.Info -output-formatter \"adams.core.command.output.LineSplit -regexp \\\"ERROR .*\\\" -invert true\" -stdout-processor adams.core.command.stdout.Log -stderr-processor adams.core.command.stderr.Log -pull-type @{pull_type}"
   adams.flow.transformer.StringJoin -glue \n
   adams.flow.sink.Display -display-type adams.flow.core.displaytype.Default -writer adams.data.io.output.NullWriter
