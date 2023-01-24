@@ -1,4 +1,4 @@
-# Configuration file for the Flow Editor.
+# Configuration file for the Flow Runner.
 #
 # Author: FracPete (fracpete at waikato dot ac dot nz)
 # Version: $Revision$
@@ -11,6 +11,3 @@
 #   %c - the current directory
 #   %% - gets replaced by a single percentage sign
 InitialDir=%c/flows
-
-# Disables check when saving a flow
-CheckOnSave=false
