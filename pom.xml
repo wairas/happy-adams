@@ -64,20 +64,6 @@
 
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
-      <artifactId>adams-docker</artifactId>
-      <version>${adams.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>nz.ac.waikato.cms.adams</groupId>
-      <artifactId>adams-docker</artifactId>
-      <version>${adams.version}</version>
-      <scope>test</scope>
-      <type>test-jar</type>
-    </dependency>
-
-    <dependency>
-      <groupId>nz.ac.waikato.cms.adams</groupId>
       <artifactId>adams-excel</artifactId>
       <version>${adams.version}</version>
     </dependency>
@@ -92,13 +78,13 @@
 
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
-      <artifactId>adams-imaging</artifactId>
+      <artifactId>adams-imaging-ext</artifactId>
       <version>${adams.version}</version>
     </dependency>
 
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
-      <artifactId>adams-imaging</artifactId>
+      <artifactId>adams-imaging-ext</artifactId>
       <version>${adams.version}</version>
       <scope>test</scope>
       <type>test-jar</type>
