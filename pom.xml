@@ -456,6 +456,12 @@
         <groupId>org.owasp</groupId>
         <artifactId>dependency-check-maven</artifactId>
       </plugin>
+
+      <!-- mvn duplicate-finder:check -->
+      <plugin>
+        <groupId>org.basepom.maven</groupId>
+        <artifactId>duplicate-finder-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 </project>
